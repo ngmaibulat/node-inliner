@@ -29,7 +29,6 @@
   },
   "devDependencies": {
     "faux-jax": "^5.0.6",
-    "istanbul": "^0.4.5",
     "mime-types": "^2.1.25",
     "mocha": "^6.2.2"
   },
@@ -43,8 +42,6 @@
   },
   "scripts": {
     "test": "node --test",
-    "coverage": "node ./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- --ui bdd -R spec",
-    "lint": "eslint . --fix || true",
-    "format": "jscs . -x"
+    "lint": "eslint ."
   }
 }
