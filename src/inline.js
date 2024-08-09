@@ -12,5 +12,16 @@ var inline = {};
 
 module.exports = inline;
 
-inline.html = require( "./html" );
-inline.css = require( "./css" );
+inline.html = require("./html");
+inline.css = require("./css");
+
+// Use ESM
+// import html from "./html";
+// import css from "./css";
+
+// const inline = {};
+
+// inline.html = html;
+// inline.css = css;
+
+// export default inline;
