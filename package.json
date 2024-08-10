@@ -30,7 +30,8 @@
   "devDependencies": {
     "faux-jax": "^5.0.6",
     "mime-types": "^2.1.25",
-    "mocha": "^6.2.2"
+    "mocha": "^6.2.2",
+    "msw": "^2.3.5"
   },
   "dependencies": {
     "ansi-colors": "^4.1.1",
@@ -42,6 +43,7 @@
   },
   "scripts": {
     "test": "node --test",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "check:mock": "node --env-file=dev.env mocks/index.mjs "
   }
 }

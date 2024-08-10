@@ -10,6 +10,11 @@
 -   build cli tool
 -   yaml config
 
+### Tests
+
+-   node test runner
+-   vitest
+
 ### Coverage
 
 -   Add new coverage instead of

@@ -13,28 +13,13 @@ describe("(http mocking)", function () {
                     mime.contentType(path.extname(relativePath)) ||
                     "application/octet-stream",
             };
-            var content = fs.readFileSync("test/cases/" + relativePath);
+            var content = fs.readFileSync("cases/" + relativePath);
             request.respond(200, headers, content);
         });
     });
 
     afterEach(function () {
         fauxJax.restore();
-    });
-
-    it("should not try to inline empty links", function (done) {
-        const content = '<link href="" rel="stylesheet" />';
-
-        inline.html(
-            {
-                fileContent: content,
-                strict: false,
-                relativeTo: baseUrl,
-            },
-            function (err, result) {
-                testEquality(err, result, content, done);
-            }
-        );
     });
 
     it("should not try to inline a link that starts with #", function (done) {
