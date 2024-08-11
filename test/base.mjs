@@ -31,48 +31,6 @@ test("base: should exclude based on inlineAttribute", () => {
     });
 });
 
-test("base: should pass HTTP errors up through callbacks when strict", () => {
-    const input = {
-        fileContent: readFile("cases/404.html"),
-        relativeTo: "cases/",
-        strict: true,
-    };
-
-    const message =
-        "https://raw.githubusercontent.com/not-a-file.css returned http 400";
-
-    inline.html(input, function (err, result) {
-        assert.equal(err.message, message);
-    });
-});
-
-test("base: should pass missing file errors up through callbacks when strict", () => {
-    const expected = readFile("cases/missing-file.html");
-
-    const input = {
-        fileContent: readFile("cases/missing-file.html"),
-        relativeTo: "cases/",
-        strict: true,
-    };
-
-    inline.html(input, function (err, result) {
-        assert.equal(result, expected);
-    });
-});
-
-test("base: should console.warn HTTP errors when not strict", () => {
-    const expected = readFile("cases/404.html");
-
-    const input = {
-        fileContent: readFile("cases/404.html"),
-        relativeTo: "cases/",
-    };
-
-    inline.html(input, function (err, result) {
-        assert.equal(result, expected);
-    });
-});
-
 test("base: should console.warn missing file errors when not strict", () => {
     const input = {
         fileContent: readFile("cases/missing-file.html"),

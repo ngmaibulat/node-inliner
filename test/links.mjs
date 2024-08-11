@@ -1,12 +1,5 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import fs from "node:fs";
-import path from "node:path";
-
-import fauxJax from "faux-jax";
-import mime from "mime-types";
-
-import util from "../src/util.js";
 import inline from "../src/inline.js";
 
 import { normalize, readFile, diff, testEquality, add } from "./functions.mjs";

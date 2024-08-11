@@ -1,4 +1,5 @@
 import { server } from "./node.mjs";
+import { baseUrl } from "./baseurl.mjs";
 
 console.log(process.env.MSW_ENABLED);
 
@@ -9,7 +10,7 @@ if (process.env.MSW_ENABLED) {
 }
 
 async function app() {
-    const response = await fetch("https://example.com/user");
+    const response = await fetch(`${baseUrl}/user`);
     const user = await response.json();
     console.log(user);
 }
