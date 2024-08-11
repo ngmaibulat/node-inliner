@@ -3,7 +3,6 @@
 var path = require("path");
 var url = require("url");
 var fs = require("fs");
-var fetch = require("node-fetch");
 var colors = require("ansi-colors");
 var mime = require("mime");
 var validDataUrl = require("valid-data-url");
@@ -90,7 +89,7 @@ util.getAttrs = function (tagMarkup, settings) {
 };
 
 function defaultRequestResource(requestOptions, callback) {
-    var fetchOptions = {
+    const fetchOptions = {
         method: "GET",
         compress: requestOptions.gzip,
     };
@@ -101,9 +100,10 @@ function defaultRequestResource(requestOptions, callback) {
                     requestOptions.uri + " returned http " + response.status
                 );
             }
+
             if (requestOptions.encoding === "binary") {
-                return response.buffer().then(function (body) {
-                    var b64 = body.toString("base64");
+                return response.arrayBuffer().then(function (arrayBuffer) {
+                    var b64 = Buffer.from(arrayBuffer).toString("base64");
                     var datauriContent =
                         "data:" +
                         response.headers.get("content-type") +
@@ -111,7 +111,22 @@ function defaultRequestResource(requestOptions, callback) {
                         b64;
                     return datauriContent;
                 });
-            } else {
+            }
+
+            // Old way - node-fetch has a built-in buffer() method
+            // if (requestOptions.encoding === "binary") {
+            //     return response.buffer().then(function (body) {
+            //         var b64 = body.toString("base64");
+            //         var datauriContent =
+            //             "data:" +
+            //             response.headers.get("content-type") +
+            //             ";base64," +
+            //             b64;
+            //         return datauriContent;
+            //     });
+            // }
+            // else on a separate line
+            else {
                 return response.text();
             }
         })

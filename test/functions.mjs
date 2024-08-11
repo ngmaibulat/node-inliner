@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import path from "node:path";
 
 function normalize(contents) {
     return process.platform === "win32"

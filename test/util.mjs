@@ -2,7 +2,6 @@ import { test } from "node:test";
 import assert from "node:assert";
 import inline from "../src/inline.js";
 import util from "../src/util.js";
-import { readFile } from "./functions.mjs";
 
 test("util: should escape special regex characters in a string", () => {
     const str = "http://fonts.googleapis.com/css?family=Open+Sans";
