@@ -12,7 +12,7 @@
 
 ### Tests
 
--   node test runner
+-   .node test runner
 -   vitest
 
 ### Coverage
