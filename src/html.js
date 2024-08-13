@@ -1,11 +1,13 @@
 "use strict";
 
-var path = require("path");
-var { htmlUnescape } = require("escape-goat");
-var inline = require("./util");
-var css = require("./css");
-var htmlparser = require("htmlparser2");
+const path = require("path");
 const { type } = require("os");
+
+const { DomHandler } = require("domhandler");
+const htmlparser = require("htmlparser2");
+const { htmlUnescape } = require("escape-goat");
+const inline = require("./util");
+const css = require("./css");
 
 module.exports = function (options, callback) {
     var settings = Object.assign({}, inline.defaults, options);
@@ -222,13 +224,17 @@ module.exports = function (options, callback) {
                 return callback(null);
             }
 
-            console.log("Content:");
-            console.log(content);
+            const trivialHandler = new DomHandler((err, dom) => {
+                if (err) {
+                    console.log("trivialHandler error");
+                }
+
+                console.log("trivialHandler");
+                return callback(null);
+            });
 
             const handler = new htmlparser.DomHandler(
                 function (err, dom) {
-                    console.log("Inside handler");
-
                     if (err) {
                         return callback(err);
                     }
@@ -238,17 +244,10 @@ module.exports = function (options, callback) {
                         dom
                     );
 
-                    console.log("SVG:");
-                    console.log(svg);
                     if (svg.length) {
                         var use = htmlparser.DomUtils.getInnerHTML(svg[0]);
                         // var use = htmlparser.DomUtils.textContent(svg[0]);
 
-                        //debug
-                        console.log("Use:");
-                        console.log(use);
-                        console.log("Args.element:");
-                        console.log(args.element);
                         var re = new RegExp(
                             inline.escapeSpecialChars(args.element),
                             "g"
@@ -261,12 +260,12 @@ module.exports = function (options, callback) {
                 { normalizeWhitespace: true }
             );
 
-            console.log("Content@264:");
-            console.log(content.toString());
-            const parser = new htmlparser.Parser(handler, { xmlMode: true });
-            parser.write(content);
+            // const parser = new htmlparser.Parser(trivialHandler);
+            const parser = new htmlparser.Parser(handler, {
+                xmlMode: true,
+            });
 
-            // parser.done();
+            parser.write(content.toString());
             parser.end();
         });
     };
@@ -359,17 +358,11 @@ module.exports = function (options, callback) {
                 id: htmlUnescape(found[3]).trim(),
             };
 
-            //debug
-            console.log(context);
-
             tasks.push(replaceSvg.bind(context));
         }
     }
 
     result = replaceInlineAttribute(result);
-
-    //debug
-    console.log(tasks);
 
     const promises = tasks.map(function (fn) {
         return new Promise(function (resolve, reject) {

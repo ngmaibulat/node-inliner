@@ -13,8 +13,6 @@ test("svg: should inline local svgs", (t) => {
     };
 
     inline.html(input, function (err, result) {
-        // if (err) throw err;
-        t.diagnostic(result);
         assert.equal(result, expected);
     });
 });

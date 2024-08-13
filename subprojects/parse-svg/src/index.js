@@ -1,5 +1,16 @@
 import fs from "node:fs";
 import * as htmlparser from "htmlparser2";
+import { find, findOne, findAll, getInnerHTML } from "domutils";
+
+// find all svg
+// for each svg - find all use elements
+// for each use element - find the xlink:href attribute
+
+// parse the target svg file - grab svgContent
+// replace the use element with the svgContent
+
+// Also
+// Handle img tags with svg src
 
 const args = {
     element: '<use xlink:href="assets/circle.svg#circle"></use>',
@@ -28,36 +39,29 @@ function escapeSpecialChars(str) {
 
 const handler = new htmlparser.DomHandler(
     function (err, dom) {
-        if (err) {
-            return callback(err);
+        // const svg = htmlparser.DomUtils.getElements({ id: args.id }, dom);
+        // const svg = htmlparser.DomUtils.getElements({ id: "circle" }, dom);
+
+        const svg = findOne((elem) => elem.name === "svg", dom);
+
+        if (!svg) {
+            return;
         }
 
-        var svg = htmlparser.DomUtils.getElements({ id: args.id }, dom);
+        const svgContent = getInnerHTML(svg);
+        const re = new RegExp(escapeSpecialChars(args.element), "g");
 
-        if (svg.length) {
-            var use = htmlparser.DomUtils.getInnerHTML(svg[0]);
-            // var use = htmlparser.DomUtils.textContent(svg[0]);
-
-            //debug
-            console.log("Use:");
-            console.log(use);
-            console.log("Args.element:");
-            console.log(args.element);
-            var re = new RegExp(escapeSpecialChars(args.element), "g");
-            result = result.replace(re, () => use);
-        }
+        result = result.replace(re, () => svgContent);
 
         return;
     },
     { normalizeWhitespace: true }
 );
 
-const content = fs.readFileSync("content.svg", "utf8");
-
 const parser = new htmlparser.Parser(handler, { xmlMode: true });
+const content = fs.readFileSync("content.svg", "utf8");
 parser.write(content);
 
-// parser.done();
 parser.end();
 
 console.log(result);
