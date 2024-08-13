@@ -1,7 +1,7 @@
 "use strict";
 
-import html from "./html.js";
-import css from "./css.js";
+import html from "./html.mjs";
+import css from "./css.mjs";
 
 const inline = {};
 

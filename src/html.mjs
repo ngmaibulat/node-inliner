@@ -1,16 +1,26 @@
 "use strict";
 
-const path = require("path");
-const { type } = require("os");
+import path from "path";
+import { type } from "os";
+import { DomHandler } from "domhandler";
+import * as htmlparser from "htmlparser2";
+import { htmlUnescape } from "escape-goat";
 
-const { DomHandler } = require("domhandler");
-const htmlparser = require("htmlparser2");
-const { htmlUnescape } = require("escape-goat");
-const inline = require("./util");
-const css = require("./css");
+import {
+    defaults,
+    getAttrs,
+    attrValueExpression,
+    getTextReplacement,
+    getFileReplacement,
+    handleReplaceErr,
+    escapeSpecialChars,
+    isRemotePath,
+} from "./util.mjs";
 
-module.exports = function (options, callback) {
-    var settings = Object.assign({}, inline.defaults, options);
+import css from "./css.mjs";
+
+export default function (options, callback) {
+    var settings = Object.assign({}, defaults, options);
 
     function replaceInlineAttribute(str) {
         const isBuffer = str instanceof Buffer;
@@ -25,14 +35,14 @@ module.exports = function (options, callback) {
                     " " +
                         settings.inlineAttribute +
                         "-ignore" +
-                        inline.attrValueExpression,
+                        attrValueExpression,
                     "gi"
                 ),
                 ""
             )
             .replace(
                 new RegExp(
-                    " " + settings.inlineAttribute + inline.attrValueExpression,
+                    " " + settings.inlineAttribute + attrValueExpression,
                     "gi"
                 ),
                 ""
@@ -44,9 +54,9 @@ module.exports = function (options, callback) {
 
         args.element = replaceInlineAttribute(args.element);
 
-        inline.getTextReplacement(args.src, settings, function (err, content) {
+        getTextReplacement(args.src, settings, function (err, content) {
             if (err) {
-                return inline.handleReplaceErr(
+                return handleReplaceErr(
                     err,
                     args.src,
                     settings.strict,
@@ -74,10 +84,7 @@ module.exports = function (options, callback) {
                     ">\n" +
                     html +
                     "\n</script>";
-                var re = new RegExp(
-                    inline.escapeSpecialChars(args.element),
-                    "g"
-                );
+                var re = new RegExp(escapeSpecialChars(args.element), "g");
                 result = result.replace(re, () => html);
                 return callback(null);
             };
@@ -94,9 +101,9 @@ module.exports = function (options, callback) {
 
         args.element = replaceInlineAttribute(args.element);
 
-        inline.getTextReplacement(args.src, settings, function (err, content) {
+        getTextReplacement(args.src, settings, function (err, content) {
             if (err) {
-                return inline.handleReplaceErr(
+                return handleReplaceErr(
                     err,
                     args.src,
                     settings.strict,
@@ -120,8 +127,8 @@ module.exports = function (options, callback) {
                 var cssOptions = Object.assign({}, settings, {
                     fileContent: content.toString(),
                     rebaseRelativeTo:
-                        inline.isRemotePath(args.src) &&
-                        !inline.isRemotePath(settings.relativeTo)
+                        isRemotePath(args.src) &&
+                        !isRemotePath(settings.relativeTo)
                             ? args.src
                             : path.relative(
                                   settings.relativeTo,
@@ -146,10 +153,7 @@ module.exports = function (options, callback) {
                         ">\n" +
                         html.replace(/\/\*[\s]*--[\s]*>*/gm, "/* - ->") +
                         "\n</style>";
-                    var re = new RegExp(
-                        inline.escapeSpecialChars(args.element),
-                        "g"
-                    );
+                    var re = new RegExp(escapeSpecialChars(args.element), "g");
                     result = result.replace(re, () => html);
                     return callback(null);
                 });
@@ -167,39 +171,32 @@ module.exports = function (options, callback) {
 
         args.element = replaceInlineAttribute(args.element);
 
-        inline.getFileReplacement(
-            args.src,
-            settings,
-            function (err, datauriContent) {
-                if (err) {
-                    return inline.handleReplaceErr(
-                        err,
-                        args.src,
-                        settings.strict,
-                        callback
-                    );
-                }
-                if (
-                    !datauriContent ||
-                    (typeof args.limit === "number" &&
-                        datauriContent.length > args.limit * 1000)
-                ) {
-                    return callback(null);
-                }
-                var html =
-                    "<img" +
-                    (args.attrs ? " " + args.attrs : "") +
-                    ' src="' +
-                    datauriContent +
-                    '" />';
-                var re = new RegExp(
-                    inline.escapeSpecialChars(args.element),
-                    "g"
+        getFileReplacement(args.src, settings, function (err, datauriContent) {
+            if (err) {
+                return handleReplaceErr(
+                    err,
+                    args.src,
+                    settings.strict,
+                    callback
                 );
-                result = result.replace(re, () => html);
+            }
+            if (
+                !datauriContent ||
+                (typeof args.limit === "number" &&
+                    datauriContent.length > args.limit * 1000)
+            ) {
                 return callback(null);
             }
-        );
+            var html =
+                "<img" +
+                (args.attrs ? " " + args.attrs : "") +
+                ' src="' +
+                datauriContent +
+                '" />';
+            var re = new RegExp(escapeSpecialChars(args.element), "g");
+            result = result.replace(re, () => html);
+            return callback(null);
+        });
     };
 
     const replaceSvg = function (callback) {
@@ -207,9 +204,9 @@ module.exports = function (options, callback) {
 
         args.element = replaceInlineAttribute(args.element);
 
-        inline.getTextReplacement(args.src, settings, function (err, content) {
+        getTextReplacement(args.src, settings, function (err, content) {
             if (err) {
-                return inline.handleReplaceErr(
+                return handleReplaceErr(
                     err,
                     args.src,
                     settings.strict,
@@ -249,7 +246,7 @@ module.exports = function (options, callback) {
                         // var use = htmlparser.DomUtils.textContent(svg[0]);
 
                         var re = new RegExp(
-                            inline.escapeSpecialChars(args.element),
+                            escapeSpecialChars(args.element),
                             "g"
                         );
                         result = result.replace(re, () => use);
@@ -294,7 +291,7 @@ module.exports = function (options, callback) {
                     replaceScript.bind({
                         element: found[0],
                         src: src,
-                        attrs: inline.getAttrs(found[0], settings),
+                        attrs: getAttrs(found[0], settings),
                         limit: settings.scripts,
                     })
                 );
@@ -315,7 +312,7 @@ module.exports = function (options, callback) {
                     replaceLink.bind({
                         element: found[0],
                         src: src,
-                        attrs: inline.getAttrs(found[0], settings),
+                        attrs: getAttrs(found[0], settings),
                         limit: settings.links,
                     })
                 );
@@ -335,7 +332,7 @@ module.exports = function (options, callback) {
                     replaceImg.bind({
                         element: found[0],
                         src: src,
-                        attrs: inline.getAttrs(found[0], settings),
+                        attrs: getAttrs(found[0], settings),
                         limit: settings.images,
                     })
                 );
@@ -353,7 +350,7 @@ module.exports = function (options, callback) {
             const context = {
                 element: found[0],
                 src: htmlUnescape(found[2]).trim(),
-                attrs: inline.getAttrs(found[0], settings),
+                attrs: getAttrs(found[0], settings),
                 limit: settings.svgs,
                 id: htmlUnescape(found[3]).trim(),
             };
@@ -384,4 +381,4 @@ module.exports = function (options, callback) {
             callback(error, result);
         }
     );
-};
+}

@@ -1,17 +1,13 @@
 "use strict";
 
-var path = require("path");
-var url = require("url");
-var fs = require("fs");
-var colors = require("ansi-colors");
-var mime = require("mime");
-var validDataUrl = require("valid-data-url");
+import path from "path";
+import url from "url";
+import fs from "fs";
+import colors from "ansi-colors";
+import mime from "mime";
+import validDataUrl from "valid-data-url";
 
-var util = {};
-
-module.exports = util;
-
-util.defaults = {
+export const defaults = {
     images: 8,
     svgs: 8,
     scripts: true,
@@ -26,7 +22,7 @@ util.defaults = {
     linkTransform: undefined,
 };
 
-util.attrValueExpression = "(=[\"']([^\"']+?)[\"'])?";
+export const attrValueExpression = "(=[\"']([^\"']+?)[\"'])?";
 
 /**
  * Escape special regex characters of a particular string
@@ -37,19 +33,19 @@ util.attrValueExpression = "(=[\"']([^\"']+?)[\"'])?";
  * @param  {String} str - string to escape
  * @return {String} string with special characters escaped
  */
-util.escapeSpecialChars = function (str) {
+export function escapeSpecialChars(str) {
     return str.replace(/(\/|\.|\$|\^|\{|\[|\(|\||\)|\*|\+|\?|\\)/gm, "\\$1");
-};
+}
 
-util.isRemotePath = function (url) {
+export function isRemotePath(url) {
     return /^'?https?:\/\/|^\/\//.test(url);
-};
+}
 
-util.isBase64Path = function (url) {
+export function isBase64Path(url) {
     return /^'?data.*base64/.test(url);
-};
+}
 
-util.getAttrs = function (tagMarkup, settings) {
+export function getAttrs(tagMarkup, settings) {
     var tag = tagMarkup.match(/^<[^\W>]*/);
     if (tag) {
         tag = tag[0];
@@ -63,16 +59,14 @@ util.getAttrs = function (tagMarkup, settings) {
             .replace(/>?\s?<\/[^>]*>$/, "")
             .replace(
                 new RegExp(
-                    settings.inlineAttribute +
-                        "-ignore" +
-                        util.attrValueExpression,
+                    settings.inlineAttribute + "-ignore" + attrValueExpression,
                     "gi"
                 ),
                 ""
             )
             .replace(
                 new RegExp(
-                    settings.inlineAttribute + util.attrValueExpression,
+                    settings.inlineAttribute + attrValueExpression,
                     "gi"
                 ),
                 ""
@@ -86,9 +80,9 @@ util.getAttrs = function (tagMarkup, settings) {
             return attrs.replace(/(href|rel)=["'][^"']*["']/g, "").trim();
         }
     }
-};
+}
 
-function defaultRequestResource(requestOptions, callback) {
+export function defaultRequestResource(requestOptions, callback) {
     const fetchOptions = {
         method: "GET",
         compress: requestOptions.gzip,
@@ -111,22 +105,7 @@ function defaultRequestResource(requestOptions, callback) {
                         b64;
                     return datauriContent;
                 });
-            }
-
-            // Old way - node-fetch has a built-in buffer() method
-            // if (requestOptions.encoding === "binary") {
-            //     return response.buffer().then(function (body) {
-            //         var b64 = body.toString("base64");
-            //         var datauriContent =
-            //             "data:" +
-            //             response.headers.get("content-type") +
-            //             ";base64," +
-            //             b64;
-            //         return datauriContent;
-            //     });
-            // }
-            // else on a separate line
-            else {
+            } else {
                 return response.text();
             }
         })
@@ -140,7 +119,7 @@ function defaultRequestResource(requestOptions, callback) {
         );
 }
 
-function getRemote(uri, settings, callback, toDataUri) {
+export function getRemote(uri, settings, callback, toDataUri) {
     if (/^\/\//.test(uri)) {
         uri = "https:" + uri;
     }
@@ -159,66 +138,63 @@ function getRemote(uri, settings, callback, toDataUri) {
     requestResource(requestOptions, callback);
 }
 
-util.getInlineFilePath = function (src, relativeTo) {
+export function getInlineFilePath(src, relativeTo) {
     src = src.replace(/^\//, "");
     return path.resolve(relativeTo, src).replace(/[\?#].*$/, "");
-};
+}
 
-util.getInlineFileContents = function (src, relativeTo) {
-    return fs.readFileSync(util.getInlineFilePath(src, relativeTo));
-};
+export function getInlineFileContents(src, relativeTo) {
+    return fs.readFileSync(getInlineFilePath(src, relativeTo));
+}
 
-util.getTextReplacement = function (src, settings, callback) {
-    if (util.isRemotePath(settings.relativeTo) || util.isRemotePath(src)) {
+export function getTextReplacement(src, settings, callback) {
+    if (isRemotePath(settings.relativeTo) || isRemotePath(src)) {
         getRemote(url.resolve(settings.relativeTo, src), settings, callback);
-    } else if (util.isRemotePath(src)) {
+    } else if (isRemotePath(src)) {
         getRemote(src, settings, callback);
     } else {
         try {
-            var replacement = util.getInlineFileContents(
-                src,
-                settings.relativeTo
-            );
+            var replacement = getInlineFileContents(src, settings.relativeTo);
         } catch (err) {
             return callback(err);
         }
         return callback(null, replacement);
     }
-};
+}
 
-util.getFileReplacement = function (src, settings, callback) {
-    if (!src || util.srcIsCid(src)) {
+export function getFileReplacement(src, settings, callback) {
+    if (!src || srcIsCid(src)) {
         callback(null);
-    } else if (util.isRemotePath(settings.relativeTo)) {
+    } else if (isRemotePath(settings.relativeTo)) {
         getRemote(
             url.resolve(settings.relativeTo, src),
             settings,
             callback,
             true
         );
-    } else if (util.isRemotePath(src)) {
+    } else if (isRemotePath(src)) {
         getRemote(src, settings, callback, true);
     } else if (validDataUrl(src)) {
         callback(null, src);
     } else {
-        var fileName = util.getInlineFilePath(src, settings.relativeTo);
+        var fileName = getInlineFilePath(src, settings.relativeTo);
         var mimetype = mime.getType(fileName);
         fs.readFile(fileName, "base64", function (err, base64) {
             var datauri = `data:${mimetype};base64,${base64}`;
             callback(err, datauri);
         });
     }
-};
+}
 
-util.srcIsCid = function (src) {
+export function srcIsCid(src) {
     return src.match(/^cid:/);
-};
+}
 
-util.handleReplaceErr = function (err, src, strict, callback) {
+export function handleReplaceErr(err, src, strict, callback) {
     if (strict) {
         return callback(err);
     } else {
         console.warn(colors.yellow("Not found, skipping: " + src));
         return callback(null);
     }
-};
+}
