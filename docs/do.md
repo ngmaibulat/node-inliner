@@ -1,8 +1,7 @@
 ### Deps
 
--   escape-goat: update to version 4.0.0
--   mime: update to version 4.0.4
--   valid-data-url: update to version 5.0.0
+-   escape-goat: update to version 4.0.0 -- after esm
+-   mime: update to version 4.0.4 -- after esm
 
 ### ESM
 
