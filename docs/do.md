@@ -1,8 +1,8 @@
-### Todo
+### Deps
 
--   remove depenency from node-fetch
--   use native fetch
--   split tests to multiple files
+-   escape-goat: update to version 4.0.0
+-   mime: update to version 4.0.4
+-   valid-data-url: update to version 5.0.0
 
 ### ESM
 
@@ -12,10 +12,10 @@
 
 ### Tests
 
--   .node test runner
 -   vitest
+-   coverage report
 
-### Coverage
+### Features
 
--   Add new coverage instead of
--   `node ./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- --ui bdd -R spec`
+-   Promise Based API
+-   cssinliner like juice

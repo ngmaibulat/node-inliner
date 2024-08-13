@@ -3,7 +3,7 @@ import assert from "node:assert";
 import inline from "../src/inline.js";
 import { readFile } from "./functions.mjs";
 
-test("svg: should inline local svgs", () => {
+test("svg: should inline local svgs", (t) => {
     const expected = readFile("cases/svg/svg_out.html");
 
     const input = {
@@ -13,6 +13,8 @@ test("svg: should inline local svgs", () => {
     };
 
     inline.html(input, function (err, result) {
+        // if (err) throw err;
+        t.diagnostic(result);
         assert.equal(result, expected);
     });
 });

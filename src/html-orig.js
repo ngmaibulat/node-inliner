@@ -200,8 +200,8 @@ module.exports = function (options, callback) {
         );
     };
 
-    const replaceSvg = function (callback) {
-        const args = this;
+    var replaceSvg = function (callback) {
+        var args = this;
 
         args.element = replaceInlineAttribute(args.element);
 
@@ -222,13 +222,8 @@ module.exports = function (options, callback) {
                 return callback(null);
             }
 
-            console.log("Content:");
-            console.log(content);
-
-            const handler = new htmlparser.DomHandler(
+            var handler = new htmlparser.DomHandler(
                 function (err, dom) {
-                    console.log("Inside handler");
-
                     if (err) {
                         return callback(err);
                     }
@@ -237,18 +232,8 @@ module.exports = function (options, callback) {
                         { id: args.id },
                         dom
                     );
-
-                    console.log("SVG:");
-                    console.log(svg);
                     if (svg.length) {
                         var use = htmlparser.DomUtils.getInnerHTML(svg[0]);
-                        // var use = htmlparser.DomUtils.textContent(svg[0]);
-
-                        //debug
-                        console.log("Use:");
-                        console.log(use);
-                        console.log("Args.element:");
-                        console.log(args.element);
                         var re = new RegExp(
                             inline.escapeSpecialChars(args.element),
                             "g"
@@ -260,14 +245,9 @@ module.exports = function (options, callback) {
                 },
                 { normalizeWhitespace: true }
             );
-
-            console.log("Content@264:");
-            console.log(content.toString());
-            const parser = new htmlparser.Parser(handler, { xmlMode: true });
+            var parser = new htmlparser.Parser(handler, { xmlMode: true });
             parser.write(content);
-
-            // parser.done();
-            parser.end();
+            parser.done();
         });
     };
 
@@ -344,34 +324,28 @@ module.exports = function (options, callback) {
         }
     }
 
-    const svgRegex =
+    var svgRegex =
         /<use\b[\s\S]+?\bxlink:href\s*=\s*("|')([\s\S]+?)#([^"'\s]*)("|')\s*\/?>(<\/\s*use>)?/gi;
     while ((found = svgRegex.exec(result)) !== null) {
         if (
             !inlineAttributeIgnoreRegex.test(found[0]) &&
             (settings.svgs || inlineAttributeRegex.test(found[0]))
         ) {
-            const context = {
-                element: found[0],
-                src: htmlUnescape(found[2]).trim(),
-                attrs: inline.getAttrs(found[0], settings),
-                limit: settings.svgs,
-                id: htmlUnescape(found[3]).trim(),
-            };
-
-            //debug
-            console.log(context);
-
-            tasks.push(replaceSvg.bind(context));
+            tasks.push(
+                replaceSvg.bind({
+                    element: found[0],
+                    src: htmlUnescape(found[2]).trim(),
+                    attrs: inline.getAttrs(found[0], settings),
+                    limit: settings.svgs,
+                    id: htmlUnescape(found[3]).trim(),
+                })
+            );
         }
     }
 
     result = replaceInlineAttribute(result);
 
-    //debug
-    console.log(tasks);
-
-    const promises = tasks.map(function (fn) {
+    var promises = tasks.map(function (fn) {
         return new Promise(function (resolve, reject) {
             fn(function (error) {
                 if (error) {
