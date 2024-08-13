@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import inline from "../src/inline.js";
+import inline from "../src/inline.mjs";
 import { readFile } from "./functions.mjs";
 
 test("base: should inline based on inlineAttribute", () => {

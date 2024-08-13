@@ -1,7 +1,7 @@
 import { test, before, after, afterEach, beforeEach } from "node:test";
 import assert from "node:assert";
 import { server } from "../mocks/node.mjs";
-const baseUrl = "https://localhost";
+import { baseUrl } from "../mocks/baseurl.mjs";
 
 before(() => {
     server.listen();

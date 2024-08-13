@@ -4,7 +4,7 @@ import assert from "node:assert";
 import { setupServer } from "msw/node";
 import { http } from "msw";
 
-import inline from "../src/inline.js";
+import inline from "../src/inline.mjs";
 import { baseUrl } from "../mocks/baseurl.mjs";
 
 let count = 0;

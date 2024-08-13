@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import inline from "./src/inline.js";
+import inline from "./src/inline.mjs";
 import { readFile } from "./test/functions.mjs";
 
 test("svg: should inline local svgs", (t) => {

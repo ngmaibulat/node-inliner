@@ -3,7 +3,7 @@ import assert from "node:assert";
 import fs from "fs";
 import { server } from "../mocks/node.mjs";
 
-import inline from "../src/inline.js";
+import inline from "../src/inline.mjs";
 import { readFile } from "./functions.mjs";
 import { baseUrl } from "../mocks/baseurl.mjs";
 

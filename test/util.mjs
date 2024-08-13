@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import inline from "../src/inline.js";
+import inline from "../src/inline.mjs";
 import util from "../src/util.js";
 
 test("util: should escape special regex characters in a string", () => {

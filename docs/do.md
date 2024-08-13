@@ -17,4 +17,5 @@
 ### Features
 
 -   Promise Based API
+-   separate svg-inliner
 -   cssinliner like juice
