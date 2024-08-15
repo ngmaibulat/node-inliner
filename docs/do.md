@@ -1,8 +1,7 @@
 ### CSS
 
 -   build cli tool
--   refactor css.mjs
--   make complete inline, like `juice`
+-   make complete css inliner, like `juice`
 -   inline `tailwind 4`
 -   deno
 -   JSR package

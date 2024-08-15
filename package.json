@@ -40,7 +40,7 @@
     "valid-data-url": "^5.0.0"
   },
   "scripts": {
-    "test": "node --test",
+    "test": "node --env-file=dev.env --test",
     "lint": "eslint .",
     "check:mock": "node --env-file=dev.env mocks/index.mjs "
   }
