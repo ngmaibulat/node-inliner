@@ -98,7 +98,8 @@ export async function processUrls(
     css,
     settings,
     inlineAttributeRegex,
-    inlineAttributeIgnoreRegex
+    inlineAttributeIgnoreRegex,
+    callback
 ) {
     const regexMatches = css.matchAll(urlRegexGI);
 
@@ -150,42 +151,10 @@ export async function cssInline(settings, callback) {
         result,
         settings,
         inlineAttributeRegex,
-        inlineAttributeIgnoreRegex
+        inlineAttributeIgnoreRegex,
+        callback
     );
     return result;
-
-    // const regexMatches = result.matchAll(urlRegexGI);
-
-    // for (const found of regexMatches) {
-    //     if (inlineAttributeIgnoreRegex.test(found)) {
-    //         continue;
-    //     }
-
-    //     const needsProcessing =
-    //         settings.images || inlineAttributeRegex.test(found);
-
-    //     if (!needsProcessing) {
-    //         continue;
-    //     }
-
-    //     const src = found[1];
-    //     const limit = settings.images;
-
-    //     const args = {
-    //         src,
-    //         limit,
-    //         css: result,
-    //     };
-
-    //     await replaceUrl(args, settings)
-    //         .then((res) => {
-    //             // console.log("done");
-    //             result = res;
-    //         })
-    //         .catch((err) => {
-    //             handleReplaceErr(err, src, settings.strict, callback);
-    //         });
-    // }
 }
 
 export default async function (options, callback) {
