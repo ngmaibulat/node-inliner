@@ -1,23 +1,21 @@
 "use strict";
 
 import path from "path";
-import { type } from "os";
 import { DomHandler } from "domhandler";
 import * as htmlparser from "htmlparser2";
 import { htmlUnescape } from "escape-goat";
 
+import { defaults, attrValueExpression } from "./config.mjs";
+import css from "./css.mjs";
+
 import {
-    defaults,
     getAttrs,
-    attrValueExpression,
     getTextReplacement,
     getFileReplacement,
     handleReplaceErr,
     escapeSpecialChars,
     isRemotePath,
 } from "./util.mjs";
-
-import css from "./css.mjs";
 
 export default function (options, callback) {
     var settings = Object.assign({}, defaults, options);

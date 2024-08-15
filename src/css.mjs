@@ -2,15 +2,14 @@
 
 import url from "url";
 import path from "path";
+
+import { defaults, urlRegexGI } from "./config.mjs";
 import {
-    defaults,
     escapeSpecialChars,
     isBase64Path,
     getFileReplacement,
     isRemotePath,
 } from "./util.mjs";
-
-const urlRegexGI = /url\(\s?["']?([^)'"]+)["']?\s?\).*/gi;
 
 function resolveRemotePath(src, rebaseRelativeTo) {
     return url.resolve(rebaseRelativeTo, src);

@@ -7,22 +7,7 @@ import colors from "ansi-colors";
 import mime from "mime";
 import validDataUrl from "valid-data-url";
 
-export const defaults = {
-    images: 8,
-    svgs: 8,
-    scripts: true,
-    links: true,
-    strict: false,
-    relativeTo: "",
-    rebaseRelativeTo: "",
-    inlineAttribute: "data-inline",
-    fileContent: "",
-    requestResource: undefined,
-    scriptTransform: undefined,
-    linkTransform: undefined,
-};
-
-export const attrValueExpression = "(=[\"']([^\"']+?)[\"'])?";
+import { attrValueExpression } from "./config.mjs";
 
 /**
  * Escape special regex characters of a particular string
