@@ -147,17 +147,17 @@ export async function cssInline(settings, callback) {
     const inlineAttributeRegex = createCommentRegex(attr);
     const inlineAttributeIgnoreRegex = createCommentRegex(`${attr}-ignore`);
 
-    result = await processUrls(
+    return processUrls(
         result,
         settings,
         inlineAttributeRegex,
         inlineAttributeIgnoreRegex,
         callback
     );
-    return result;
 }
 
 export default async function (options, callback) {
     const settings = { ...defaults, ...options };
-    return cssInline(settings, callback);
+    const result = await cssInline(settings, callback);
+    return result;
 }
