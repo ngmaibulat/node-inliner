@@ -8,7 +8,6 @@ import {
     isBase64Path,
     getFileReplacement,
     isRemotePath,
-    handleReplaceErr,
 } from "./util.mjs";
 
 const urlRegexGI = /url\(\s?["']?([^)'"]+)["']?\s?\).*/gi;
@@ -47,24 +46,24 @@ export function rebase(src, rebaseRelativeTo, result) {
     return replaceUrlInResult(result, src, targetPath);
 }
 
-export async function replaceUrl(args, settings) {
+export async function replaceUrl(src, limit, css, settings) {
     return new Promise((resolve, reject) => {
-        if (isBase64Path(args.src)) {
-            return resolve(args.css); // Skip
+        if (isBase64Path(src)) {
+            return resolve(css); // Skip
         }
 
-        getFileReplacement(args.src, settings, function (err, target) {
+        getFileReplacement(src, settings, function (err, target) {
             if (err) {
                 reject(err);
             }
 
-            const tooBig = isContentTooBig(target, args.limit); //Skip as the content is too big
+            const tooBig = isContentTooBig(target, limit); //Skip as the content is too big
 
             if (tooBig) {
-                resolve(args.css);
+                resolve(css);
             }
 
-            const ret = replaceUrlInResult(args.css, args.src, target);
+            const ret = replaceUrlInResult(css, src, target);
             resolve(ret);
         });
     });
@@ -98,8 +97,7 @@ export async function processUrls(
     css,
     settings,
     inlineAttributeRegex,
-    inlineAttributeIgnoreRegex,
-    callback
+    inlineAttributeIgnoreRegex
 ) {
     const regexMatches = css.matchAll(urlRegexGI);
 
@@ -118,25 +116,18 @@ export async function processUrls(
         const src = found[1];
         const limit = settings.images;
 
-        const args = {
-            src,
-            limit,
-            css,
-        };
-
-        await replaceUrl(args, settings)
+        await replaceUrl(src, limit, css, settings)
             .then((res) => {
-                // console.log("done");
                 css = res;
             })
             .catch((err) => {
-                handleReplaceErr(err, src, settings.strict, callback);
+                throw new Error(err);
             });
     }
     return css;
 }
 
-export async function cssInline(settings, callback) {
+export async function cssInline(settings) {
     let result = settings.fileContent;
 
     if (settings.rebaseRelativeTo) {
@@ -151,13 +142,17 @@ export async function cssInline(settings, callback) {
         result,
         settings,
         inlineAttributeRegex,
-        inlineAttributeIgnoreRegex,
-        callback
+        inlineAttributeIgnoreRegex
     );
 }
 
 export default async function (options, callback) {
     const settings = { ...defaults, ...options };
-    const result = await cssInline(settings, callback);
-    return result;
+
+    try {
+        const result = await cssInline(settings);
+        return callback(null, result);
+    } catch (err) {
+        return callback(err, null);
+    }
 }

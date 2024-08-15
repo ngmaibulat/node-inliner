@@ -2,23 +2,35 @@ import { test } from "node:test";
 import assert from "node:assert";
 import inline from "../src/inline.mjs";
 
-import { normalize, readFile, diff, testEquality, add } from "./functions.mjs";
-
 const content = `
 <html>
 <link href="assets/main.css" rel="stylesheet">
 </html>
 `;
 
-test("links: should inline local links", async () => {
-    const expected = readFile("cases/css_out.html", "utf8");
+const expected = `
+<html>
+<style>
+.main{border: none;}
+body{background: url(http://www.example.com/img/bg.png);/*data-inline-ignore*/}
+body{background: url('http://www.example.com/img/bg.png');/*data-inline-ignore*/}
+body{background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAHklEQVQoz2NgAIP/YMBAPBjVMNAa/pMISNcwEoMVAH0ls03D44ABAAAAAElFTkSuQmCC");}
+body{background: url("assets/not-icon.png");/*data-inline-ignore*/}
+body{background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAHklEQVQoz2NgAIP/YMBAPBjVMNAa/pMISNcwEoMVAH0ls03D44ABAAAAAElFTkSuQmCC);}
+body{background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAHklEQVQoz2NgAIP/YMBAPBjVMNAa/pMISNcwEoMVAH0ls03D44ABAAAAAElFTkSuQmCC');}
 
+</style>
+</html>
+`;
+
+test("links: should inline local links", async () => {
     const { fileContent, relativeTo } = {
         fileContent: content,
         relativeTo: "cases/",
     };
 
     inline.html({ fileContent, relativeTo }, (err, result) => {
+        assert.equal(err, null);
         assert.equal(result, expected);
     });
 });
