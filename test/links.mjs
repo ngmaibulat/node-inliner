@@ -14,25 +14,16 @@ import { normalize, readFile, diff, testEquality, add } from "./functions.mjs";
 // });
 
 test("links: should inline local links", async () => {
-    const expected = await readFile("cases/css_out.html", "utf8");
+    const expected = readFile("cases/css_out.html", "utf8");
 
     const { fileContent, relativeTo } = {
-        fileContent: await readFile("cases/css.html", "utf8"),
+        fileContent: readFile("cases/css.html", "utf8"),
         relativeTo: "cases/",
     };
 
-    try {
-        const result = await new Promise((resolve, reject) => {
-            inline.html({ fileContent, relativeTo }, (err, result) => {
-                if (err) reject(err);
-                else resolve(result);
-            });
-        });
-
+    inline.html({ fileContent, relativeTo }, (err, result) => {
         assert.equal(result, expected);
-    } catch (error) {
-        throw error;
-    }
+    });
 });
 
 test("links: should inline remote links", async () => {

@@ -11,128 +11,122 @@ import {
     handleReplaceErr,
 } from "./util.mjs";
 
-export default function (options, callback) {
-    var settings = Object.assign({}, defaults, options);
+const urlRegexGI = /url\(\s?["']?([^)'"]+)["']?\s?\).*/gi;
 
-    var replaceUrl = function (callback) {
-        var args = this;
+const KB_TO_B = 1024;
 
+export function rebase(src, rebaseRelativeTo, result) {
+    const css =
+        'url("' +
+        (isRemotePath(src) || isRemotePath(rebaseRelativeTo)
+            ? url.resolve(rebaseRelativeTo, src)
+            : path.join(rebaseRelativeTo, src).replace(/\\/g, "/")) +
+        '")';
+    const re = new RegExp(
+        "url\\(\\s?[\"']?(" + escapeSpecialChars(src) + ")[\"']?\\s?\\)",
+        "g"
+    );
+    return result.replace(re, () => css);
+}
+
+export async function replaceUrl(args, settings) {
+    return new Promise((resolve, reject) => {
         if (isBase64Path(args.src)) {
-            return callback(null); // Skip
+            return resolve(args.result); // Skip
         }
 
         getFileReplacement(args.src, settings, function (err, datauriContent) {
             if (err) {
-                return handleReplaceErr(
-                    err,
-                    args.src,
-                    settings.strict,
-                    callback
-                );
-            }
-            if (
-                typeof args.limit === "number" &&
-                datauriContent.length > args.limit * 1000
-            ) {
-                return callback(null); // Skip
+                reject(err);
             }
 
-            var css = 'url("' + datauriContent + '")';
-            var re = new RegExp(
+            const tooBig =
+                typeof args.limit === "number" &&
+                datauriContent.length > args.limit * KB_TO_B;
+
+            if (tooBig) {
+                resolve(args.result);
+            }
+
+            const css = 'url("' + datauriContent + '")';
+
+            const re = new RegExp(
                 "url\\(\\s?[\"']?(" +
                     escapeSpecialChars(args.src) +
                     ")[\"']?\\s?\\)",
                 "g"
             );
-            result = result.replace(re, () => css);
 
-            return callback(null);
+            resolve(args.result.replace(re, () => css));
         });
-    };
+    });
+}
 
-    var rebase = function (src) {
-        var css =
-            'url("' +
-            (isRemotePath(src) || isRemotePath(settings.rebaseRelativeTo)
-                ? url.resolve(settings.rebaseRelativeTo, src)
-                : path
-                      .join(settings.rebaseRelativeTo, src)
-                      .replace(/\\/g, "/")) +
-            '")';
-        var re = new RegExp(
-            "url\\(\\s?[\"']?(" + escapeSpecialChars(src) + ")[\"']?\\s?\\)",
-            "g"
-        );
-        result = result.replace(re, () => css);
-    };
+export async function cssInline(settings, callback) {
+    let result = settings.fileContent;
 
-    var result = settings.fileContent;
-    var tasks = [];
-    var found = null;
-
-    var urlRegex = /url\(\s?["']?([^)'"]+)["']?\s?\).*/i;
-    var index = 0;
-
-    if (settings.rebaseRelativeTo) {
-        var matches = {};
-        var src;
-
-        while ((found = urlRegex.exec(result.substring(index))) !== null) {
-            src = found[1];
-            matches[src] = true;
-            index = found.index + index + 1;
-        }
-
-        for (src in matches) {
-            if (!isRemotePath(src) && !isBase64Path(src)) {
-                rebase(src);
-            }
-        }
-    }
-
-    var inlineAttributeCommentRegex = new RegExp(
+    const inlineAttributeCommentRegex = new RegExp(
         "\\/\\*\\s?" + settings.inlineAttribute + "\\s?\\*\\/",
         "i"
     );
-    var inlineAttributeIgnoreCommentRegex = new RegExp(
+    const inlineAttributeIgnoreCommentRegex = new RegExp(
         "\\/\\*\\s?" + settings.inlineAttribute + "-ignore\\s?\\*\\/",
         "i"
     );
 
-    index = 0;
-    while ((found = urlRegex.exec(result.substring(index))) !== null) {
-        if (
-            !inlineAttributeIgnoreCommentRegex.test(found[0]) &&
-            (settings.images || inlineAttributeCommentRegex.test(found[0]))
-        ) {
-            tasks.push(
-                replaceUrl.bind({
-                    src: found[1],
-                    limit: settings.images,
-                })
-            );
+    if (settings.rebaseRelativeTo) {
+        const matches = result.matchAll(urlRegexGI);
+
+        for (const match of matches) {
+            const src = match[1];
+
+            if (isRemotePath(src)) {
+                continue;
+            }
+
+            if (isBase64Path(src)) {
+                continue;
+            }
+
+            result = rebase(src, settings.rebaseRelativeTo, result);
         }
-        index = found.index + index + 1;
     }
 
-    var promises = tasks.map(function (fn) {
-        return new Promise(function (resolve, reject) {
-            fn(function (error) {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve();
-                }
-            });
-        });
-    });
+    const regexMatches = result.matchAll(urlRegexGI);
 
-    Promise.all(promises).then(
-        function () {
-            callback(null, result);
-        },
-        function (error) {
-            callback(error, result);
+    for (const found of regexMatches) {
+        if (inlineAttributeIgnoreCommentRegex.test(found)) {
+            continue;
         }
-    );
+
+        const needsProcessing =
+            settings.images || inlineAttributeCommentRegex.test(found);
+
+        if (!needsProcessing) {
+            continue;
+        }
+
+        const src = found[1];
+        const limit = settings.images;
+
+        const args = {
+            src,
+            limit,
+            result,
+        };
+
+        await replaceUrl(args, settings)
+            .then((res) => {
+                // console.log("done");
+                result = res;
+            })
+            .catch((err) => {
+                handleReplaceErr(err, src, settings.strict, callback);
+            });
+    }
+}
+
+export default async function (options, callback) {
+    const settings = { ...defaults, ...options };
+    return cssInline(settings, callback);
 }
