@@ -50,7 +50,7 @@ export function rebase(src, rebaseRelativeTo, result) {
 export async function replaceUrl(args, settings) {
     return new Promise((resolve, reject) => {
         if (isBase64Path(args.src)) {
-            return resolve(args.result); // Skip
+            return resolve(args.css); // Skip
         }
 
         getFileReplacement(args.src, settings, function (err, target) {
@@ -61,10 +61,10 @@ export async function replaceUrl(args, settings) {
             const tooBig = isContentTooBig(target, args.limit); //Skip as the content is too big
 
             if (tooBig) {
-                resolve(args.result);
+                resolve(args.css);
             }
 
-            const ret = replaceUrlInResult(args.result, args.src, target);
+            const ret = replaceUrlInResult(args.css, args.src, target);
             resolve(ret);
         });
     });
@@ -146,46 +146,46 @@ export async function cssInline(settings, callback) {
     const inlineAttributeRegex = createCommentRegex(attr);
     const inlineAttributeIgnoreRegex = createCommentRegex(`${attr}-ignore`);
 
-    // result = await processUrls(
-    //     result,
-    //     settings,
-    //     inlineAttributeRegex,
-    //     inlineAttributeIgnoreRegex
-    // );
-    // return result;
+    result = await processUrls(
+        result,
+        settings,
+        inlineAttributeRegex,
+        inlineAttributeIgnoreRegex
+    );
+    return result;
 
-    const regexMatches = result.matchAll(urlRegexGI);
+    // const regexMatches = result.matchAll(urlRegexGI);
 
-    for (const found of regexMatches) {
-        if (inlineAttributeIgnoreRegex.test(found)) {
-            continue;
-        }
+    // for (const found of regexMatches) {
+    //     if (inlineAttributeIgnoreRegex.test(found)) {
+    //         continue;
+    //     }
 
-        const needsProcessing =
-            settings.images || inlineAttributeRegex.test(found);
+    //     const needsProcessing =
+    //         settings.images || inlineAttributeRegex.test(found);
 
-        if (!needsProcessing) {
-            continue;
-        }
+    //     if (!needsProcessing) {
+    //         continue;
+    //     }
 
-        const src = found[1];
-        const limit = settings.images;
+    //     const src = found[1];
+    //     const limit = settings.images;
 
-        const args = {
-            src,
-            limit,
-            result,
-        };
+    //     const args = {
+    //         src,
+    //         limit,
+    //         css: result,
+    //     };
 
-        await replaceUrl(args, settings)
-            .then((res) => {
-                // console.log("done");
-                result = res;
-            })
-            .catch((err) => {
-                handleReplaceErr(err, src, settings.strict, callback);
-            });
-    }
+    //     await replaceUrl(args, settings)
+    //         .then((res) => {
+    //             // console.log("done");
+    //             result = res;
+    //         })
+    //         .catch((err) => {
+    //             handleReplaceErr(err, src, settings.strict, callback);
+    //         });
+    // }
 }
 
 export default async function (options, callback) {
