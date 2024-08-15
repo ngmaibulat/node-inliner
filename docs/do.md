@@ -1,11 +1,15 @@
 ### Tests
 
--   write unit tests for all functions in util.mjs
+-   refactor css.mjs
+-   svg-inliner: minimize Regex usage: find by parser, replace by parser. use cleaner ESM class
 
 ### CLI
 
 -   build cli tool
 -   yaml config
+-   `node-inliner url output.html`
+-   `node-inliner -config config.yaml`
+-   `node-inliner -config config.yaml url output.html`
 
 ### Features
 

@@ -162,9 +162,9 @@ export function getTextReplacement(src, settings, callback) {
     }
 }
 
-export function getFileReplacement(src, settings, callback) {
+export function getFileReplacement(src, settings, callback, fsw = fs) {
     if (!src || srcIsCid(src)) {
-        callback(null);
+        callback(null, null);
     } else if (isRemotePath(settings.relativeTo)) {
         getRemote(
             url.resolve(settings.relativeTo, src),
@@ -177,10 +177,10 @@ export function getFileReplacement(src, settings, callback) {
     } else if (validDataUrl(src)) {
         callback(null, src);
     } else {
-        var fileName = getInlineFilePath(src, settings.relativeTo);
-        var mimetype = mime.getType(fileName);
-        fs.readFile(fileName, "base64", function (err, base64) {
-            var datauri = `data:${mimetype};base64,${base64}`;
+        const fileName = getInlineFilePath(src, settings.relativeTo);
+        const mimetype = mime.getType(fileName);
+        fsw.readFile(fileName, "base64", function (err, base64) {
+            const datauri = `data:${mimetype};base64,${base64}`;
             callback(err, datauri);
         });
     }
