@@ -1,5 +1,6 @@
 ### CSS
 
+-   `functional programming` approach for cssinliner
 -   build cli tool
 -   make complete css inliner, like `juice`
 -   inline `tailwind 4`

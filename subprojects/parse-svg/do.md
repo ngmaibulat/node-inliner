@@ -1,17 +1,18 @@
 ### SVG Parser
 
--   svg-parser
+-   cheerio
 -   jsdom
 -   htmlparser2
 
 ### HTML Parser
 
+-   cheerio
 -   jsdom
 -   htmlparser2
 
 ### Replace
 
--   regex
+-   cheerio
 -   jsdom
 -   htmlparser2
 
@@ -19,3 +20,9 @@
 
 -   yaml
 -   specify modules for: svg-parser, html-parser, replacer
+
+### Overall
+
+-   cheerio
+-   jsdom
+-   htmlparser2
